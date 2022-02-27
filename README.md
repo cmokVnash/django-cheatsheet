@@ -120,8 +120,93 @@ authorization_code:
 etc
 
 
+# Django CUSTOM USERS
+
+### user.models.py
+
+```python
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.utils.translation import gettext_lazy as _
+# Create your models here.
+
+from . import managers
 
 
+class User(AbstractBaseUser, PermissionsMixin):
+
+    email = models.EmailField(_('Email'), unique=True)
+    name = models.CharField(_('Name'), max_length=50, null=True, blank=True)
+    is_active = models.BooleanField(_('Active'), default=True)
+    date_joined = models.DateTimeField(
+        _('Date Joined'), auto_now_add=True, blank=True, null=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = managers.UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name', ]
+
+    def __str__(self):
+        return str(self.name)
+
+
+```
+### gettext is a unicode version of a translatable string.ugettext_lazy is a "lazy" version of that. Lazy strings are a Django-ism; they are string-like objects that don't actually turn into the real string until the last possible minute. Often, you can't know how to translate a string until late in the process. I don't know what language a browser uses until I can look at their request, so I want the translation string to be "lazy" and not evaluate until it absolutely needs to be rendered in the template, for instance.
+
+### user.managers.UserManager.py
+
+### The User model has a custom manager (every model has a manager by default) that has the following helper methods (in addition to the methods provided by BaseUserManager ): create_user (username, email=None, password=None, **extra_fields) Creates, saves and returns a User
+
+## managers only work on class instances not object instances therefore 
+
+```python
+user = user.objects.create_superuser(arbitrary data)
+```
+## will through an error _AttributeError: Manager isn't accessible via User instances_ But
+
+```python
+User.objects.create_superuser(arbitrary data)
+```
+## will work fine
+
+```python
+
+from django.contrib.auth.models import BaseUserManager
+from django.forms import ValidationError
+
+
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+    # _create_user is used to return both create_user and create_superuser as all fields are same keeps the code DRY
+    
+    def _create_user(self,email,password, **extra_fields):
+        
+        """
+        Creates and saves a User Model
+        """
+
+        if not email:
+            raise ValidationError("Must use email")
+
+        email = self.normalize_email(email)
+        user = self.model(email=email,**extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+
+    def create_user(self,email,password, **extra_fields):
+        extra_fields.setdefault('is_superuser', False)
+
+        return self._create_user(email,password, **extra_fields)
+
+    def create_superuser(self,email,password, **extra_fields):
+        extra_fields.setdefault('is_superuser',True)
+        extra_fields.setdefault('is_staff',True)
+        extra_fields.setdefault('is_active',True)
+
+        return self._create_user(email,password,**extra_fields)
+        
+```
 
 
 
