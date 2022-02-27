@@ -152,23 +152,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 ```
-### gettext is a unicode version of a translatable string.ugettext_lazy is a "lazy" version of that. Lazy strings are a Django-ism; they are string-like objects that don't actually turn into the real string until the last possible minute. Often, you can't know how to translate a string until late in the process. I don't know what language a browser uses until I can look at their request, so I want the translation string to be "lazy" and not evaluate until it absolutely needs to be rendered in the template, for instance.
+gettext is a unicode version of a translatable string.ugettext_lazy is a "lazy" version of that. Lazy strings are a Django-ism; they are string-like objects that don't actually turn into the real string until the last possible minute. Often, you can't know how to translate a string until late in the process. I don't know what language a browser uses until I can look at their request, so I want the translation string to be "lazy" and not evaluate until it absolutely needs to be rendered in the template, for instance.
 
 ### user.managers.UserManager.py
 
-### The User model has a custom manager (every model has a manager by default) that has the following helper methods (in addition to the methods provided by BaseUserManager ): create_user (username, email=None, password=None, **extra_fields) Creates, saves and returns a User
+The User model has a custom manager (every model has a manager by default) that has the following helper methods (in addition to the methods provided by BaseUserManager ): create_user (username, email=None, password=None, **extra_fields) Creates, saves and returns a User
 
 ## managers only work on class instances not object instances therefore 
 
 ```python
 user = user.objects.create_superuser(arbitrary data)
 ```
-## will through an error _AttributeError: Manager isn't accessible via User instances_ But
+will through an error _AttributeError: Manager isn't accessible via User instances_ But
 
 ```python
 User.objects.create_superuser(arbitrary data)
 ```
-## will work fine
+will work fine
 
 ```python
 
